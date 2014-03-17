@@ -40,38 +40,36 @@ class Test extends TestSuite {
   
   val `Extract List[Int]` = test {
     source1.list.get[List[Int]]
-  } requires Seq(
-    `Extract Int`
-  ) yields List(1, 2, 3)
+  } requires `Extract Int` yields List(1, 2, 3)
   
   val `Extract case class` = test {
     source1.foo.get[Foo]
-  } requires Seq(
+  } requires (
     `Extract String`,
     `Extract Int`
   ) yields Foo("test", 1)
   
   val `Extract nested case class` = test {
     source1.bar.get[Bar]
-  } requires Seq(
+  } requires (
     `Extract case class`
   ) yields Bar(Foo("test2", 2), 2.7)
   
   val `Extract List element` = test {
     source1.list(1).get[Int]
-  } requires Seq(
+  } requires (
     `Extract Int`
   ) yields 2
   
   val `Extract object element` = test {
     source1.bar.foo.alpha.get[String]
-  } requires Seq(
+  } requires (
     `Extract String`
   ) yields "test2"
 
 
   val `Check type failure` = test {
     source1.string.get[Int]
-  } throws TypeMismatchException(Vector(Right("string")))
+  } throws TypeMismatchException(JsonTypes.String, JsonTypes.Number, Vector(Right("string")))
 
 }
