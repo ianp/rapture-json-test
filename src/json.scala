@@ -5,9 +5,10 @@ import rapture.json._
 import rapture.test._
 
 import strategy.throwExceptions
-import jsonParsers.jackson._
 
-class Test extends TestSuite {
+import scala.reflect._
+
+class JsonTests()(implicit val parser: JsonParser[String]) extends TestSuite {
 
   val source1 = json"""{
     "string": "Hello",
@@ -18,6 +19,11 @@ class Test extends TestSuite {
     "foo": { "alpha": "test", "beta": 1 },
     "bar": { "foo": { "alpha": "test2", "beta": 2 }, "gamma": 2.7 }
   }"""
+
+  /*val source2 = JsonBuffer.parse("""{
+    "string": "Hello",
+    "int": 42
+  }""")*/
 
   case class Foo(alpha: String, beta: Int)
   case class Bar(foo: Foo, gamma: Double)
@@ -67,9 +73,69 @@ class Test extends TestSuite {
     `Extract String`
   ) yields "test2"
 
-
   val `Check type failure` = test {
     source1.string.get[Int]
   } throws TypeMismatchException(JsonTypes.String, JsonTypes.Number, Vector(Right("string")))
 
+  val `Check missing value failure` = test {
+    source1.nothing.get[Int]
+  } throws MissingValueException(Vector(Right("nothing")))
+
+  /*val `Mutable get String` = test {
+    source2.string.get[String]
+  } yields "Hello"
+
+  val `Mutable get Int` = test {
+    source2.int.get[Int]
+  } yields 42
+
+  val `Mutable change String` = test {
+    source2.string = "World"
+    source2.string.get[String]
+  } yields "World"
+
+  val `Mutable add String` = test {
+    source2.inner.newString = "Hello"
+    source2.inner.newString.get[String]
+  } yields "Hello"
+  
+  val `Mutable add case class` = test {
+    source2.foo = Foo("string", -1)
+    println(source2)
+    source2.foo.get[Foo]
+  } yields Foo("string", -1)
+  */
+  val `Match string` = test {
+    source1 match {
+      case json""" { "string": $h } """ => h.get[String]
+    }
+  } yields "Hello"
+
+  val `Match inner JSON` = test {
+    source1 match {
+      case json""" { "foo": $foo } """ => foo
+    }
+  } yields json"""{ "alpha": "test", "beta": 1 }"""
+  
+  val `Match inner string` = test {
+    source1 match {
+      case json""" { "foo": { "alpha": $t } } """ => t.get[String]
+    }
+  } yields "test"
+  
+  val `Filtered match` = test {
+    source1 match {
+      case json""" { "int": 42, "foo": { "alpha": $t } } """ => t.get[String]
+    }
+  } yields "test"
+  
+  val `Filtered failed match` = test {
+    source1 match {
+      case json""" { "int": 0, "foo": { "alpha": $t } } """ => t.get[String]
+    }
+  } throws classTag[MatchError]
 }
+
+class JawnTest extends JsonTests()(jsonParsers.jawn.jawnStringParser)
+class JacksonTest extends JsonTests()(jsonParsers.jackson.jacksonStringParser)
+class ScalaJsonTest extends JsonTests()(jsonParsers.scalaJson.scalaJsonParser)
