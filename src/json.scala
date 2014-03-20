@@ -6,8 +6,6 @@ import rapture.test._
 
 import strategy.throwExceptions
 
-import scala.reflect._
-
 class JsonTests()(implicit val parser: JsonParser[String]) extends TestSuite {
 
   val source1 = json"""{
@@ -110,7 +108,7 @@ class JsonTests()(implicit val parser: JsonParser[String]) extends TestSuite {
     source1 match {
       case json""" { "int": 0, "foo": { "alpha": $t } } """ => t.get[String]
     }
-  } throws classTag[MatchError]
+  } throws classOf[MatchError]
 }
 
 class MutableJsonTests()(implicit val parser: JsonBufferParser[String]) extends TestSuite {
@@ -154,4 +152,4 @@ class JacksonTest extends JsonTests()(jsonParsers.jackson.jacksonStringParser)
 
 class ScalaJsonTest extends JsonTests()(jsonParsers.scalaJson.scalaJsonParser)
 
-class ScalaJsonMutableTests extends MutableJsonTests()(jsonParsers.scalaJson.scalaJsonParser)
+//class ScalaJsonMutationTest extends MutableJsonTests()(jsonParsers.scalaJson.scalaJsonParser)
