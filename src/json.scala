@@ -20,11 +20,6 @@ class JsonTests()(implicit val parser: JsonParser[String]) extends TestSuite {
     "bar": { "foo": { "alpha": "test2", "beta": 2 }, "gamma": 2.7 }
   }"""
 
-  /*val source2 = JsonBuffer.parse("""{
-    "string": "Hello",
-    "int": 42
-  }""")*/
-
   case class Foo(alpha: String, beta: Int)
   case class Bar(foo: Foo, gamma: Double)
 
@@ -81,30 +76,6 @@ class JsonTests()(implicit val parser: JsonParser[String]) extends TestSuite {
     source1.nothing.get[Int]
   } throws MissingValueException(Vector(Right("nothing")))
 
-  /*val `Mutable get String` = test {
-    source2.string.get[String]
-  } yields "Hello"
-
-  val `Mutable get Int` = test {
-    source2.int.get[Int]
-  } yields 42
-
-  val `Mutable change String` = test {
-    source2.string = "World"
-    source2.string.get[String]
-  } yields "World"
-
-  val `Mutable add String` = test {
-    source2.inner.newString = "Hello"
-    source2.inner.newString.get[String]
-  } yields "Hello"
-  
-  val `Mutable add case class` = test {
-    source2.foo = Foo("string", -1)
-    println(source2)
-    source2.foo.get[Foo]
-  } yields Foo("string", -1)
-  */
   val `Match string` = test {
     source1 match {
       case json""" { "string": $h } """ => h.get[String]
@@ -129,6 +100,12 @@ class JsonTests()(implicit val parser: JsonParser[String]) extends TestSuite {
     }
   } yields "test"
   
+  val `Inner filtered match` = test {
+    source1 match {
+      case json""" { "foo": { "alpha": "test" }, "bar": { "gamma": $g } } """ => g.get[Double]
+    }
+  } yields 2.7
+  
   val `Filtered failed match` = test {
     source1 match {
       case json""" { "int": 0, "foo": { "alpha": $t } } """ => t.get[String]
@@ -136,6 +113,45 @@ class JsonTests()(implicit val parser: JsonParser[String]) extends TestSuite {
   } throws classTag[MatchError]
 }
 
+class MutableJsonTests()(implicit val parser: JsonBufferParser[String]) extends TestSuite {
+  
+  case class Foo(alpha: String, beta: Int)
+  case class Bar(foo: Foo, gamma: Double)
+  
+  val source2 = JsonBuffer.parse("""{
+    "string": "Hello",
+    "int": 42
+  }""")
+
+  val `Mutable get String` = test {
+    source2.string.get[String]
+  } yields "Hello"
+
+  val `Mutable get Int` = test {
+    source2.int.get[Int]
+  } yields 42
+
+  val `Mutable change String` = test {
+    source2.string = "World"
+    source2.string.get[String]
+  } yields "World"
+
+  val `Mutable add String` = test {
+    source2.inner.newString = "Hello"
+    source2.inner.newString.get[String]
+  } yields "Hello"
+  
+  val `Mutable add case class` = test {
+    source2.foo = Foo("string", -1)
+    println(source2)
+    source2.foo.get[Foo]
+  } yields Foo("string", -1)
+}
+
 class JawnTest extends JsonTests()(jsonParsers.jawn.jawnStringParser)
+
 class JacksonTest extends JsonTests()(jsonParsers.jackson.jacksonStringParser)
+
 class ScalaJsonTest extends JsonTests()(jsonParsers.scalaJson.scalaJsonParser)
+
+class ScalaJsonMutableTests extends MutableJsonTests()(jsonParsers.scalaJson.scalaJsonParser)
