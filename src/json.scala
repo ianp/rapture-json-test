@@ -154,14 +154,11 @@ class MutableJsonTests()(implicit val parser: JsonBufferParser[String]) extends 
 
   val `Mutable change String` = test {
     source2.string = "World"
-    println(source2)
-    println(source2.string)
     source2.string.get[String]
   } yields "World"
 
   val `Mutable add String` = test {
     source2.inner.newString = "Hello"
-    println(source2)
     source2.inner.newString.get[String]
   } yields "Hello"
   
