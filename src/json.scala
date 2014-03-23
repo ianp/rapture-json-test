@@ -109,6 +109,29 @@ class JsonTests()(implicit val parser: JsonParser[String]) extends TestSuite {
       case json""" { "int": 0, "foo": { "alpha": $t } } """ => t.get[String]
     }
   } throws classOf[MatchError]
+
+  val `Serialize string` = test {
+    Json("Hello World!").toString
+  } yields """"Hello World!""""
+
+  val `Serialize int` = test {
+    Json(1648).toString
+  } yields "1648"
+
+  val `Serialize array` = test {
+    Json(List(1, 2, 3)).toString
+  } yields """[
+             | 1,
+             | 2,
+             | 3
+             |]""".stripMargin
+
+  val `Serialize object` = test {
+
+  } yields """{
+             | "foo": "bar",
+             | "baz": "quux"
+             |}""".stripMargin
 }
 
 class MutableJsonTests()(implicit val parser: JsonBufferParser[String]) extends TestSuite {
@@ -131,17 +154,19 @@ class MutableJsonTests()(implicit val parser: JsonBufferParser[String]) extends 
 
   val `Mutable change String` = test {
     source2.string = "World"
+    println(source2)
+    println(source2.string)
     source2.string.get[String]
   } yields "World"
 
   val `Mutable add String` = test {
     source2.inner.newString = "Hello"
+    println(source2)
     source2.inner.newString.get[String]
   } yields "Hello"
   
   val `Mutable add case class` = test {
     source2.foo = Foo("string", -1)
-    println(source2)
     source2.foo.get[Foo]
   } yields Foo("string", -1)
 }
@@ -152,4 +177,5 @@ class JacksonTest extends JsonTests()(jsonParsers.jackson.jacksonStringParser)
 
 class ScalaJsonTest extends JsonTests()(jsonParsers.scalaJson.scalaJsonParser)
 
-//class ScalaJsonMutationTest extends MutableJsonTests()(jsonParsers.scalaJson.scalaJsonParser)
+class ScalaJsonMutationTest extends MutableJsonTests()(jsonParsers.scalaJson.scalaJsonParser)
+class JawnMutationTest extends MutableJsonTests()(jsonParsers.jawn.jawnStringParser)
