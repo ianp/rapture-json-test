@@ -166,13 +166,36 @@ class MutableJsonTests()(implicit val parser: JsonBufferParser[String]) extends 
     source2.foo = Foo("string", -1)
     source2.foo.get[Foo]
   } yields Foo("string", -1)
+ 
+  val `Deep insertion of integer` = test {
+    source2.alpha.beta.gamma.delta = 1
+    source2.alpha.beta.gamma.delta.get[Int]
+  } yields 1
+
+  val `Array autopadding` = test {
+    source2.autopad(4) = 1
+    source2.autopad(4).get[Int]
+  } yields 1
+
+  val `Deep array insertion of integer` = test {
+    source2.array(1)(2)(3)(4) = 1
+    source2.array(1)(2)(3)(4).get[Int]
+  } requires `Array autopadding` yields 1
+
+  val `Deep mixed insertion of string` = test {
+    source2.mixed(4).foo.bar(2).baz = "Mixed"
+    source2.mixed(4).foo.bar(2).baz.get[String]
+  } requires `Array autopadding` yields "Mixed"
+
+  val `Mutable add array String` = test {
+    source2.inner.newArray += "Hello"
+    source2.inner.newArray(0).get[String]
+  } yields "Hello"
+  
 }
 
 class JawnTest extends JsonTests()(jsonParsers.jawn.jawnStringParser)
-
 class JacksonTest extends JsonTests()(jsonParsers.jackson.jacksonStringParser)
-
 class ScalaJsonTest extends JsonTests()(jsonParsers.scalaJson.scalaJsonParser)
-
 class ScalaJsonMutationTest extends MutableJsonTests()(jsonParsers.scalaJson.scalaJsonParser)
 class JawnMutationTest extends MutableJsonTests()(jsonParsers.jawn.jawnStringParser)
