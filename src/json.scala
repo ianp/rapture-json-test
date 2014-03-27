@@ -22,61 +22,61 @@ class JsonTests()(implicit val parser: JsonParser[String]) extends TestSuite {
   case class Bar(foo: Foo, gamma: Double)
 
   val `Extract Int` = test {
-    source1.int.get[Int]
+    source1.int.as[Int]
   } yields 42
   
   val `Extract String` = test {
-    source1.string.get[String]
+    source1.string.as[String]
   } yields "Hello"
   
   val `Extract Double` = test {
-    source1.double.get[Double]
+    source1.double.as[Double]
   } yields 3.14159
   
   val `Extract Boolean` = test {
-    source1.boolean.get[Boolean]
+    source1.boolean.as[Boolean]
   } yields true
   
   val `Extract List[Int]` = test {
-    source1.list.get[List[Int]]
+    source1.list.as[List[Int]]
   } requires `Extract Int` yields List(1, 2, 3)
   
   val `Extract case class` = test {
-    source1.foo.get[Foo]
+    source1.foo.as[Foo]
   } requires (
     `Extract String`,
     `Extract Int`
   ) yields Foo("test", 1)
   
   val `Extract nested case class` = test {
-    source1.bar.get[Bar]
+    source1.bar.as[Bar]
   } requires (
     `Extract case class`
   ) yields Bar(Foo("test2", 2), 2.7)
   
   val `Extract List element` = test {
-    source1.list(1).get[Int]
+    source1.list(1).as[Int]
   } requires (
     `Extract Int`
   ) yields 2
   
   val `Extract object element` = test {
-    source1.bar.foo.alpha.get[String]
+    source1.bar.foo.alpha.as[String]
   } requires (
     `Extract String`
   ) yields "test2"
 
   val `Check type failure` = test {
-    source1.string.get[Int]
+    source1.string.as[Int]
   } throws TypeMismatchException(JsonTypes.String, JsonTypes.Number, Vector(Right("string")))
 
   val `Check missing value failure` = test {
-    source1.nothing.get[Int]
+    source1.nothing.as[Int]
   } throws MissingValueException(Vector(Right("nothing")))
 
   val `Match string` = test {
     source1 match {
-      case json""" { "string": $h } """ => h.get[String]
+      case json""" { "string": $h } """ => h.as[String]
     }
   } yields "Hello"
 
@@ -88,25 +88,25 @@ class JsonTests()(implicit val parser: JsonParser[String]) extends TestSuite {
   
   val `Match inner string` = test {
     source1 match {
-      case json""" { "foo": { "alpha": $t } } """ => t.get[String]
+      case json""" { "foo": { "alpha": $t } } """ => t.as[String]
     }
   } yields "test"
   
   val `Filtered match` = test {
     source1 match {
-      case json""" { "int": 42, "foo": { "alpha": $t } } """ => t.get[String]
+      case json""" { "int": 42, "foo": { "alpha": $t } } """ => t.as[String]
     }
   } yields "test"
   
   val `Inner filtered match` = test {
     source1 match {
-      case json""" { "foo": { "alpha": "test" }, "bar": { "gamma": $g } } """ => g.get[Double]
+      case json""" { "foo": { "alpha": "test" }, "bar": { "gamma": $g } } """ => g.as[Double]
     }
   } yields 2.7
   
   val `Filtered failed match` = test {
     source1 match {
-      case json""" { "int": 0, "foo": { "alpha": $t } } """ => t.get[String]
+      case json""" { "int": 0, "foo": { "alpha": $t } } """ => t.as[String]
     }
   } throws classOf[MatchError]
 
@@ -145,51 +145,51 @@ class MutableJsonTests()(implicit val parser: JsonBufferParser[String]) extends 
   }""")
 
   val `Mutable get String` = test {
-    source2.string.get[String]
+    source2.string.as[String]
   } yields "Hello"
 
   val `Mutable get Int` = test {
-    source2.int.get[Int]
+    source2.int.as[Int]
   } yields 42
 
   val `Mutable change String` = test {
     source2.string = "World"
-    source2.string.get[String]
+    source2.string.as[String]
   } yields "World"
 
   val `Mutable add String` = test {
     source2.inner.newString = "Hello"
-    source2.inner.newString.get[String]
+    source2.inner.newString.as[String]
   } yields "Hello"
   
   val `Mutable add case class` = test {
     source2.foo = Foo("string", -1)
-    source2.foo.get[Foo]
+    source2.foo.as[Foo]
   } yields Foo("string", -1)
  
   val `Deep insertion of integer` = test {
     source2.alpha.beta.gamma.delta = 1
-    source2.alpha.beta.gamma.delta.get[Int]
+    source2.alpha.beta.gamma.delta.as[Int]
   } yields 1
 
   val `Array autopadding` = test {
     source2.autopad(4) = 1
-    source2.autopad(4).get[Int]
+    source2.autopad(4).as[Int]
   } yields 1
 
   val `Deep array insertion of integer` = test {
     source2.array(1)(2)(3)(4) = 1
-    source2.array(1)(2)(3)(4).get[Int]
+    source2.array(1)(2)(3)(4).as[Int]
   } requires `Array autopadding` yields 1
 
   val `Deep mixed insertion of string` = test {
     source2.mixed(4).foo.bar(2).baz = "Mixed"
-    source2.mixed(4).foo.bar(2).baz.get[String]
+    source2.mixed(4).foo.bar(2).baz.as[String]
   } requires `Array autopadding` yields "Mixed"
 
   val `Mutable add array String` = test {
     source2.inner.newArray += "Hello"
-    source2.inner.newArray(0).get[String]
+    source2.inner.newArray(0).as[String]
   } yields "Hello"
   
 }
