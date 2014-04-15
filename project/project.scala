@@ -2,7 +2,7 @@ object project extends ProjectSettings {
   def scalaVersion = "2.10.4"
   def version = "0.9.0"
   def name = "json-test"
-  def description = "Rapture JSON is a comprehensive library providing support for working with JSON in Scala"
+  def description = "Tests for Rapture JSON"
   
   def dependencies = Seq(
     "core" -> "0.9.0",
