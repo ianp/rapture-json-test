@@ -1,4 +1,0 @@
-#!/bin/sh
-mkdir -p bin && \
-scalac -feature -deprecation -cp ../json/json.jar:../core/core.jar:../test/test.jar:../json-jawn/lib/jawn.jar:../json-jawn/json-jawn.jar:../json-jackson/json-jackson.jar:../json-jackson/lib/jackson.jar -d bin src/*.scala && \
-jar cmf etc/manifest json-test.jar -C bin rapture

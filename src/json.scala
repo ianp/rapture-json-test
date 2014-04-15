@@ -8,6 +8,8 @@ import strategy.throwExceptions
 
 class JsonTests()(implicit val parser: JsonParser[String]) extends TestSuite {
 
+  import jsonParsers.scalaJson._
+
   val source1 = json"""{
     "string": "Hello",
     "int": 42,
