@@ -1,14 +1,16 @@
-package rapture.json.test
+package rapture.json.test.BACKEND
 
 import rapture.core._
 import rapture.json._
+import rapture.data._
 import rapture.test._
 
-import strategy.throwExceptions
+case class Foo(alpha: String, beta: Int)
+case class Bar(foo: Foo, gamma: Double)
 
-class JsonTests()(implicit val parser: JsonParser[String]) extends TestSuite {
+class JsonTests() extends TestSuite {
 
-  import jsonParsers.scalaJson._
+  import jsonBackends.BACKEND._
 
   val source1 = json"""{
     "string": "Hello",
@@ -19,9 +21,6 @@ class JsonTests()(implicit val parser: JsonParser[String]) extends TestSuite {
     "foo": { "alpha": "test", "beta": 1 },
     "bar": { "foo": { "alpha": "test2", "beta": 2 }, "gamma": 2.7 }
   }"""
-
-  case class Foo(alpha: String, beta: Int)
-  case class Bar(foo: Foo, gamma: Double)
 
   val `Extract Int` = test {
     source1.int.as[Int]
@@ -70,7 +69,7 @@ class JsonTests()(implicit val parser: JsonParser[String]) extends TestSuite {
 
   val `Check type failure` = test {
     source1.string.as[Int]
-  } throws TypeMismatchException(JsonTypes.String, JsonTypes.Number, Vector(Right("string")))
+  } throws TypeMismatchException(DataTypes.String, DataTypes.Number, Vector(Right("string")))
 
   val `Check missing value failure` = test {
     source1.nothing.as[Int]
@@ -129,15 +128,28 @@ class JsonTests()(implicit val parser: JsonParser[String]) extends TestSuite {
              |]""".stripMargin
 
   val `Serialize object` = test {
-
+    import formatters.humanReadable
+    Json.format(json"""{"foo":"bar","baz":"quux"}""")
   } yields """{
              | "foo": "bar",
              | "baz": "quux"
              |}""".stripMargin
+  
+  val `Empty object serialization` = test {
+    import formatters.humanReadable
+    Json.format(json"{}")
+  } yields "{}"
+  
+  val `Empty array serialization` = test {
+    import formatters.humanReadable
+    Json.format(json"[]")
+  } yields "[]"
 }
 
-class MutableJsonTests()(implicit val parser: JsonBufferParser[String]) extends TestSuite {
-  
+class MutableJsonTests() extends TestSuite {
+ 
+  import jsonBackends.BACKEND._
+
   case class Foo(alpha: String, beta: Int)
   case class Bar(foo: Foo, gamma: Double)
   
@@ -163,7 +175,12 @@ class MutableJsonTests()(implicit val parser: JsonBufferParser[String]) extends 
     source2.inner.newString = "Hello"
     source2.inner.newString.as[String]
   } yields "Hello"
-  
+ 
+  val `Mutable add Json` = test {
+    val jb = JsonBuffer.empty
+    jb.foo = json"""{ "foo": "bar" }"""
+  } yields jsonBuffer"""{ "foo": { "foo": "bar" } }"""
+
   val `Mutable add case class` = test {
     source2.foo = Foo("string", -1)
     source2.foo.as[Foo]
@@ -195,9 +212,3 @@ class MutableJsonTests()(implicit val parser: JsonBufferParser[String]) extends 
   } yields "Hello"
   
 }
-
-class JawnTest extends JsonTests()(jsonParsers.jawn.jawnStringParser)
-class JacksonTest extends JsonTests()(jsonParsers.jackson.jacksonStringParser)
-class ScalaJsonTest extends JsonTests()(jsonParsers.scalaJson.scalaJsonParser)
-class ScalaJsonMutationTest extends MutableJsonTests()(jsonParsers.scalaJson.scalaJsonParser)
-class JawnMutationTest extends MutableJsonTests()(jsonParsers.jawn.jawnStringParser)
