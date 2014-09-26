@@ -1,6 +1,6 @@
 object project extends ProjectSettings {
   def scalaVersion = "2.10.4"
-  def version = "0.10.0"
+  def version = "1.0.0"
   def name = "json-test"
   def description = "Tests for Rapture JSON"
   
@@ -13,6 +13,7 @@ object project extends ProjectSettings {
     "json-lift" -> "0.10.0",
     "json-jackson" -> "0.10.0",
     "json-json4s" -> "0.10.0",
+    "json-spray" -> "0.10.0",
     "json-argonaut" -> "0.10.0"
   )
   

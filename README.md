@@ -5,8 +5,12 @@ Contains a selection of tests for Rapture JSON, which test various extraction an
 matches on JSON. These tests currently run against the following JSON parsers:
 
  - Scala Standard Library JSON parser
- - Jackson 1.9
  - Jawn
+ - Jackson
+ - Argonaut
+ - JSON4S
+ - Lift JSON
+ - Spray JSON
 
 Instructions on running the tests
 ---------------------------------

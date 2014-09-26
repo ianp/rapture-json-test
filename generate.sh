@@ -1,4 +1,4 @@
 #!/bin/sh
-for BACKEND in scalaJson jawn json4s lift argonaut; do
-  sed "s/BACKEND/$BACKEND/g" presrc/json.scala > src/$BACKEND.scala
+for BACKEND in scalaJson spray jawn json4s lift argonaut; do
+  sed "s/BACKEND/$BACKEND/g" pre/json.scala > src/$BACKEND.scala
 done
