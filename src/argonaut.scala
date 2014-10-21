@@ -111,6 +111,20 @@ class JsonTests() extends TestSuite {
     }
   } throws classOf[MatchError]
 
+  val `Multiple pattern match` = test {
+    json"""{ "foo": "bar" }""" match {
+      case json"""{ "bar": "foo" }""" => 0
+      case json"""{ "foo": "baz" }""" => 1
+      case json"""{ "foo": "bar" }""" => 2
+    }
+  } yields 2
+
+  val `Empty object doesn't match` = test {
+    json"""{ "foo": "bar" }""" match {
+      case json"""{ "foo": {} }""" => 0
+    }
+  } throws classOf[MatchError]
+
   val `Serialize string` = test {
     Json("Hello World!").toString
   } yields """"Hello World!""""
