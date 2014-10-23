@@ -8,6 +8,13 @@ import rapture.test._
 case class Foo(alpha: String, beta: Int)
 case class Bar(foo: Foo, gamma: Double)
 
+case class A(a: B)
+case class B(b: C)
+case class C(c: D)
+case class D(d: E)
+case class E(e: F)
+case class F(f: Int)
+
 class JsonTests() extends TestSuite {
 
   import jsonBackends.argonaut._
@@ -42,6 +49,10 @@ class JsonTests() extends TestSuite {
     source1.list.as[List[Int]]
   } requires `Extract Int` yields List(1, 2, 3)
   
+  val `Extract Vector[Int]` = test {
+    source1.list.as[Vector[Int]]
+  } requires `Extract Int` yields Vector(1, 2, 3)
+  
   val `Extract case class` = test {
     source1.foo.as[Foo]
   } requires (
@@ -54,7 +65,11 @@ class JsonTests() extends TestSuite {
   } requires (
     `Extract case class`
   ) yields Bar(Foo("test2", 2), 2.7)
-  
+ 
+  val `Extract deeply-nested case class` = test {
+    json"""{ "a": { "b": { "c": { "d": { "e": { "f": 1 } } } } } }""".as[A]
+  } yields A(B(C(D(E(F(1))))))
+
   val `Extract List element` = test {
     source1.list(1).as[Int]
   } requires (
