@@ -1,5 +1,5 @@
 object project extends ProjectSettings {
-  def scalaVersion = "2.10.4"
+  def scalaVersion = "2.11.2"
   def version = "1.0.4"
   def name = "json-test"
   def description = "Tests for Rapture JSON"
@@ -7,7 +7,6 @@ object project extends ProjectSettings {
   def dependencies = Seq(
     "test" -> "0.10.1",
     "json-jawn" -> "1.0.4",
-    "json-lift" -> "1.0.4",
     "json-jackson" -> "1.0.4",
     "json-json4s" -> "1.0.4",
     "json-spray" -> "1.0.4",
