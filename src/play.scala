@@ -1,4 +1,4 @@
-package rapture.json.test.lift
+package rapture.json.test.play
 
 import rapture.core._
 import rapture.json._
@@ -17,7 +17,7 @@ case class F(f: Int)
 
 class JsonTests() extends TestSuite {
 
-  import jsonBackends.lift._
+  import jsonBackends.play._
 
   val source1 = json"""{
     "string": "Hello",
@@ -177,7 +177,7 @@ class JsonTests() extends TestSuite {
 
 class MutableJsonTests() extends TestSuite {
  
-  import jsonBackends.lift._
+  import jsonBackends.play._
 
   case class Foo(alpha: String, beta: Int)
   case class Bar(foo: Foo, gamma: Double)
