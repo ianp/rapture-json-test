@@ -60,122 +60,121 @@ abstract class JsonTests(ast: JsonAst, parser: Parser[String, JsonAst]) extends 
 
   val `Extract Int` = test {
     source1.int.as[Int]
-  } yields 42
-  
+  } returns 42
   val `Extract value called "self"` = test {
     source1.self.as[Int]
-  } yields 0
+  } returns 0
   
   val `Extract Option[Int]` = test {
     source1.int.as[Option[Int]]
-  } yields Some(42)
+  } returns Some(42)
   
   val `Extract Option[Int], wrong type` = test {
     source1.string.as[Option[Int]]
-  } yields None
+  } returns None
  
   val `Extract String` = test {
     source1.string.as[String]
-  } yields "Hello"
+  } returns "Hello"
   
   val `Extract Double` = test {
     source1.double.as[Double]
-  } yields 3.14159
+  } returns 3.14159
   
   val `Extract Boolean` = test {
     source1.boolean.as[Boolean]
-  } yields true
+  } returns true
   
   val `Extract List[Int]` = test {
     source1.list.as[List[Int]]
-  } requires `Extract Int` yields List(1, 2, 3)
+  } requires `Extract Int` returns List(1, 2, 3)
   
   val `Extract Vector[Int]` = test {
     source1.list.as[Vector[Int]]
-  } requires `Extract Int` yields Vector(1, 2, 3)
+  } requires `Extract Int` returns Vector(1, 2, 3)
   
   val `Extract case class` = test {
     source1.foo.as[Foo]
   } requires (
     `Extract String`,
     `Extract Int`
-  ) yields Foo("test", 1)
+  ) returns Foo("test", 1)
   
   val `Extract case class with missing optional value` = test {
     source1.baz.as[Baz]
-  } yields Baz("test", None)
+  } returns Baz("test", None)
   
   val `Extract case class with missing tried value` = test {
     source1.baz.as[Baz2]
-  } yields Baz2("test", util.Failure(MissingValueException(Vector())))
+  } returns Baz2("test", util.Failure(MissingValueException()))
   
   val `Extract case class with present optional value` = test {
     source1.baz2.as[Baz]
-  } yields Baz("test", Some(7))
+  } returns Baz("test", Some(7))
   
   val `Extract case class with present tried value` = test {
     source1.baz2.as[Baz2]
-  } yields Baz2("test", util.Success(7))
+  } returns Baz2("test", util.Success(7))
   
   val `Extract nested case class` = test {
     source1.bar.as[Bar]
   } requires (
     `Extract case class`
-  ) yields Bar(Foo("test2", 2), 2.7)
- 
-  val `Extract deeply-nested case class` = test {
-    json"""{ "a": { "b": { "c": { "d": { "e": { "f": 1 } } } } } }""".as[A]
-  } yields A(B(C(D(E(F(1))))))
+  ) returns Bar(Foo("test2", 2), 2.7)
+  
+  //val `Extract deeply-nested case class` = test {
+  //  json"""{ "a": { "b": { "c": { "d": { "e": { "f": 1 } } } } } }""".as[A]
+  //} returns A(B(C(D(E(F(1))))))
 
   val `Extract List element` = test {
     source1.list(1).as[Int]
   } requires (
     `Extract Int`
-  ) yields 2
+  ) returns 2
   
   val `Extract object element` = test {
     source1.bar.foo.alpha.as[String]
   } requires (
     `Extract String`
-  ) yields "test2"
+  ) returns "test2"
 
   val `Check type failure` = test {
     source1.string.as[Int]
-  } throws TypeMismatchException(Some(DataTypes.String -> DataTypes.Number), Vector(Right("string")))
+  } throws TypeMismatchException(DataTypes.String, DataTypes.Number)
 
   val `Check missing value failure` = test {
     source1.nothing.as[Int]
-  } throws MissingValueException(Vector(Right("nothing")))
+  } throws MissingValueException()
 
   val `Match string` = test {
     source1 match {
       case json""" { "string": $h } """ => h.as[String]
     }
-  } yields "Hello"
+  } returns "Hello"
 
   val `Match inner JSON` = test {
     source1 match {
       case json""" { "foo": $foo } """ => foo
     }
-  } yields json"""{ "alpha": "test", "beta": 1 }"""
+  } returns json"""{ "alpha": "test", "beta": 1 }"""
   
   val `Match inner string` = test {
     source1 match {
       case json""" { "foo": { "alpha": $t } } """ => t.as[String]
     }
-  } yields "test"
+  } returns "test"
   
   val `Filtered match` = test {
     source1 match {
       case json""" { "int": 42, "foo": { "alpha": $t } } """ => t.as[String]
     }
-  } yields "test"
+  } returns "test"
   
   val `Inner filtered match` = test {
     source1 match {
       case json""" { "foo": { "alpha": "test" }, "bar": { "gamma": $g } } """ => g.as[Double]
     }
-  } yields 2.7
+  } returns 2.7
   
   val `Filtered failed match` = test {
     source1 match {
@@ -189,7 +188,7 @@ abstract class JsonTests(ast: JsonAst, parser: Parser[String, JsonAst]) extends 
       case json"""{ "foo": "baz" }""" => 1
       case json"""{ "foo": "bar" }""" => 2
     }
-  } yields 2
+  } returns 2
 
   val `Empty object doesn't match` = test {
     json"""{ "foo": "bar" }""" match {
@@ -199,20 +198,20 @@ abstract class JsonTests(ast: JsonAst, parser: Parser[String, JsonAst]) extends 
 
   val `Serialize string` = test {
     Json("Hello World!").toString
-  } yields """"Hello World!""""
+  } returns """"Hello World!""""
 
   val `Serialize int` = test {
     Json(1648).toString
-  } yields "1648"
+  } returns "1648"
 
   val `Serialize array` = test {
     Json(List(1, 2, 3)).toString
-  } yields "[1,2,3]"
+  } returns "[1,2,3]"
 
   val `Serialize object` = test {
     import formatters.humanReadable._
     Json.format(json"""{"baz":"quux","foo":"bar"}""")
-  } yields """{
+  } returns """{
              | "baz": "quux",
              | "foo": "bar"
              |}""".stripMargin
@@ -220,12 +219,18 @@ abstract class JsonTests(ast: JsonAst, parser: Parser[String, JsonAst]) extends 
   val `Empty object serialization` = test {
     import formatters.humanReadable._
     Json.format(json"{}")
-  } yields "{}"
+  } returns "{}"
   
   val `Empty array serialization` = test {
     import formatters.humanReadable._
     Json.format(json"[]")
-  } yields "[]"
+  } returns "[]"
+
+  // As reported by Jim Newsham
+  val `Extracting Option should not throw exception` = test {
+    val j = json"""{"foo":"bar"}"""
+    j.as[Option[String]]
+  } returns None
 }
 
 abstract class MutableJsonTests(ast: JsonBufferAst, parser: Parser[String, JsonBufferAst]) extends TestSuite {
@@ -236,7 +241,7 @@ abstract class MutableJsonTests(ast: JsonBufferAst, parser: Parser[String, JsonB
   case class Foo(alpha: String, beta: Int)
   case class Bar(foo: Foo, gamma: Double)
   
-  val mutableSource = json"""{
+  val mutableSource = jsonBuffer"""{
     "string": "Hello",
     "int": 42,
     "double": 3.14159,
@@ -247,11 +252,11 @@ abstract class MutableJsonTests(ast: JsonBufferAst, parser: Parser[String, JsonB
     "baz": { "alpha": "test" },
     "baz2": { "alpha": "test", "beta": 7 },
     "self": 0
-  }""".as[JsonBuffer]
+  }"""
 
   val `Mutable extract Int` = test {
     mutableSource.int.as[Int]
-  } yields 42
+  } returns 42
   
   val source2 = JsonBuffer.parse("""{
     "string": "Hello",
@@ -260,55 +265,59 @@ abstract class MutableJsonTests(ast: JsonBufferAst, parser: Parser[String, JsonB
 
   val `Mutable get String` = test {
     source2.string.as[String]
-  } yields "Hello"
+  } returns "Hello"
+
+  //val `Mutable get optional String` = test {
+  //  source2.string.as[Option[String]]
+  //} returns Some("Hello")
 
   val `Mutable get Int` = test {
     source2.int.as[Int]
-  } yields 42
+  } returns 42
 
   val `Mutable change String` = test {
     source2.string = "World"
     source2.string.as[String]
-  } yields "World"
+  } returns "World"
 
   val `Mutable add String` = test {
     source2.inner.newString = "Hello"
     source2.inner.newString.as[String]
-  } yields "Hello"
+  } returns "Hello"
  
   val `Mutable add Json` = test {
     val jb = JsonBuffer.empty
     jb.foo = json"""{ "foo": "bar" }"""
-  } yields jsonBuffer"""{ "foo": { "foo": "bar" } }"""
+  } returns jsonBuffer"""{ "foo": { "foo": "bar" } }"""
 
   val `Mutable add case class` = test {
     source2.foo = Foo("string", -1)
     source2.foo.as[Foo]
-  } yields Foo("string", -1)
+  } returns Foo("string", -1)
  
   val `Deep insertion of integer` = test {
     source2.alpha.beta.gamma.delta = 1
     source2.alpha.beta.gamma.delta.as[Int]
-  } yields 1
+  } returns 1
 
   val `Array autopadding` = test {
     source2.autopad(4) = 1
     source2.autopad(4).as[Int]
-  } yields 1
+  } returns 1
 
   val `Deep array insertion of integer` = test {
     source2.array(1)(2)(3)(4) = 1
     source2.array(1)(2)(3)(4).as[Int]
-  } requires `Array autopadding` yields 1
+  } requires `Array autopadding` returns 1
 
   val `Deep mixed insertion of string` = test {
     source2.mixed(4).foo.bar(2).baz = "Mixed"
     source2.mixed(4).foo.bar(2).baz.as[String]
-  } requires `Array autopadding` yields "Mixed"
+  } requires `Array autopadding` returns "Mixed"
 
   val `Mutable add array String` = test {
     source2.inner.newArray += "Hello"
     source2.inner.newArray(0).as[String]
-  } yields "Hello"
+  } returns "Hello"
  
 }
