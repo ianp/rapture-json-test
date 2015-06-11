@@ -71,7 +71,8 @@ object RaptureBuild extends Build {
     ),
     publishTo := Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
     libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-reflect" % scalaVersion.value
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      "org.scalatest" %% "scalatest" % "2.2.4" % "test"
     ),
     publishMavenStyle := true,
     libraryDependencies ++= proj.dependencies.map { case (p, v) =>

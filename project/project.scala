@@ -5,7 +5,7 @@ object project extends ProjectSettings {
   def description = "Tests for Rapture JSON"
   
   def dependencies = Seq(
-    "test" -> "1.1.0",
+//    "test" -> "1.1.0",
     "json-argonaut" -> "1.1.0",
     "json-jackson" -> "1.1.0",
     "json-jawn" -> "1.1.0",
@@ -23,8 +23,8 @@ object project extends ProjectSettings {
   def imports = Seq(
     "rapture.core._",
     "rapture.json._",
-    "rapture.data._",
-    "rapture.test._"
+    "rapture.data._"
+//    "rapture.test._"
   )
 
   override def mainClass = "rapture.test.Main"
