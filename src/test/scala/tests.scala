@@ -21,6 +21,10 @@ case class D(d: E)
 case class E(e: F)
 case class F(f: Int)
 
+case class Strings(xs: List[String])
+case class Ints(xs: List[Int])
+case class Things[T](xs: List[T])
+
 import jsonBackends._
 class ScalaJsonTests() extends JsonTests(scalaJson.implicitJsonAst, scalaJson.implicitJsonStringParser)
 class PlayTests() extends JsonTests(play.implicitJsonAst, play.implicitJsonStringParser)
@@ -56,7 +60,9 @@ abstract class JsonTests(ast: JsonAst, parser: Parser[String, JsonAst]) extends 
     "bar": { "foo": { "alpha": "test2", "beta": 2 }, "gamma": 2.7 },
     "baz": { "alpha": "test" },
     "baz2": { "alpha": "test", "beta": 7 },
-    "self": 0
+    "self": 0,
+    "strings": { "xs": ["a", "beginning", "is", "a", "very", "delicate", "time", "..."] },
+    "ints": { "xs": [0, 1, 1, 2, 3, 5, 8, 13] }
   }"""
 
   "json" should "extract int" in {
@@ -224,6 +230,17 @@ abstract class JsonTests(ast: JsonAst, parser: Parser[String, JsonAst]) extends 
     val j = json"""{"foo":"bar"}"""
     j.as[Option[String]] shouldBe None
   }
+
+  it should "Extract sequences" in {
+    source1.strings.as[Strings] shouldBe Strings(List("a", "beginning", "is", "a", "very", "delicate", "time", "..."))
+    source1.ints.as[Ints] shouldBe Ints(List(0, 1, 1, 2, 3, 5, 8, 13))
+  }
+
+  it should "Extract parameterised types" in {
+    source1.strings.as[Things[String]] shouldBe Things(List("a", "beginning", "is", "a", "very", "delicate", "time", "..."))
+    source1.ints.as[Things[Int]] shouldBe Things(List(0, 1, 1, 2, 3, 5, 8, 13))
+  }
+
 }
 
 abstract class MutableJsonTests(ast: JsonBufferAst, parser: Parser[String, JsonBufferAst]) extends FlatSpec with Matchers {
