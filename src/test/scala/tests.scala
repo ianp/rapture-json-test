@@ -240,15 +240,15 @@ abstract class JsonTests(ast: JsonAst, parser: Parser[String, JsonAst]) extends 
 //    source1.ints.as[Things[Int]] shouldBe Things(List(0, 1, 1, 2, 3, 5, 8, 13))
 //  }
 
-//  it should "Extract parameterised strings" in {
-//    implicit val extractor = new Extractor[Things[String], Json] {
-//      override def construct(any: Json, ast: DataAst): Things[String] = {
-//        val m = any.$ast.getObject(any.$root.value)
-//        ???
-//      }
-//    }
-//    source1.strings.as[Things[String]] shouldBe Things(List("a", "beginning", "is", "a", "very", "delicate", "time", "..."))
-//  }
+  it should "Extract parameterised strings" in {
+    implicit val extractor = new Extractor[Things[String], Json] {
+      override def construct(any: Json, ast: DataAst): Things[String] = {
+        val m = any.$ast.getObject(any.$root.value)
+        Things(any.$ast.getArray(m("xs")).map(any.$ast.getString).toList)
+      }
+    }
+    source1.strings.as[Things[String]] shouldBe Things(List("a", "beginning", "is", "a", "very", "delicate", "time", "..."))
+  }
 
   it should "Serialize parameterised types" in {
     import formatters.compact._
